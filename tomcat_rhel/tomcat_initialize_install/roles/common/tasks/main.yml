@@ -1,0 +1,7 @@
+- name: Install initializtion require software
+  yum: name={{ item }} state=latest
+  with_items:
+    - xinetd 
+    - gcc
+    - dos2unix
+    - rsync 

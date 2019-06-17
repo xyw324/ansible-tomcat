@@ -1,0 +1,136 @@
+---
+- name: environment variable bashrc effect
+  shell: source /etc/profile
+
+- name: Copy apache-tomcat-{{ tomcat_version }}.tar.gz  to clients
+  copy: src=apache-tomcat-{{ tomcat_version }}.tar.gz dest=/tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+
+- name: Uncompression apache-tomcat-{{ tomcat_version }}.tar.gz
+  shell: tar zxf /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz -C /usr/local/src/
+  
+- name: mkdir u01 
+  command: mkdir -p /u01
+  
+- name: copy apache-tomcat-{{ tomcat_version }} to tomcat-{{ tomcat_application_name }}
+  command: mv /usr/local/src/apache-tomcat-{{ tomcat_version }}  /u01/tomcat-{{ tomcat_application_name }}
+  
+- name: Copy apr code file to clients
+  copy: src=apr-{{ apr_version }}.tar.gz dest=/tmp/apr-{{ apr_version }}.tar.gz
+
+- name: Uncompression apr-{{ apr_version }}.tar.gz
+  shell: tar zxf /tmp/apr-{{ apr_version }}.tar.gz -C /usr/local/src/
+  
+- name: Configure the install apr-{{ apr_version }}
+  command: ./configure --prefix=/usr/local/apr
+  args:
+    chdir: /usr/local/src/apr-{{ apr_version }}
+
+- name: Make apr-{{ apr_version }}
+  command: make
+  args:
+    chdir: /usr/local/src/apr-{{ apr_version }}
+
+- name: Make install apr-{{ apr_version }}
+  command: make install 
+  args:
+    chdir: /usr/local/src/apr-{{ apr_version }}
+    
+- name: Copy apr-util code file to clients
+  copy: src=apr-util-{{ apr_util_version }}.tar.gz dest=/tmp/apr-util-{{ apr_util_version }}.tar.gz
+
+- name: Uncompression apr-util-{{ apr_util_version }}.tar.gz
+  shell: tar zxf /tmp/apr-util-{{ apr_util_version }}.tar.gz -C /usr/local/src/
+  
+- name: Configure the install apr-util-{{ apr_util_version }}
+  command: ./configure --with-apr=/usr/local/apr
+  args:
+    chdir: /usr/local/src/apr-util-{{ apr_util_version }}
+
+- name: Make apr-util-{{ apr_util_version }}
+  command: make
+  args:
+    chdir: /usr/local/src/apr-util-{{ apr_util_version }}
+
+- name: Make install apr-util-{{ apr_util_version }}
+  command: make install 
+  args:
+    chdir: /usr/local/src/apr-util-{{ apr_util_version }}
+  
+- name: Copy openssl code file to clients
+  copy: src=openssl-{{ openssl_version }}f.tar.gz dest=/tmp/openssl-{{ openssl_version }}f.tar.gz
+
+- name: Uncompression openssl-{{ openssl_version }}f.tar.gz
+  shell: tar zxf /tmp/openssl-{{ openssl_version }}f.tar.gz -C /usr/local/src/
+  
+- name: Configure the install openssl-{{ openssl_version }}f
+  command: ./config --prefix=/usr/local/openssl
+  args:
+    chdir: /usr/local/src/openssl-{{ openssl_version }}f
+
+- name: Make openssl-{{ openssl_version }}f
+  command: make
+  args:
+    chdir: /usr/local/src/openssl-{{ openssl_version }}f
+
+- name: Make install openssl-{{ openssl_version }}f
+  command: make install 
+  args:
+    chdir: /usr/local/src/openssl-{{ openssl_version }}f
+    
+
+- name: Uncompression tomcat-native.tar.gz
+  shell: tar zxf /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native.tar.gz -C /u01/tomcat-{{ tomcat_application_name }}/bin
+  
+- name: Configure the install tomcat-native
+  command: ./configure --with-apr=/usr/local/apr  --with-ssl=/usr/local/openssl
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+
+- name: Make tomcat-native
+  command: make
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+
+- name: Make install tomcat-native
+  command: make install 
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+    
+- name: Add env
+  shell: echo 'export LD_LIBRARY_PATH=/usr/local/apr/lib:$LD_LIBRARY_PATH' >> /etc/profile
+  
+- name: mkdir u01 httpd
+  command: mkdir -p {{ tomcat_httpddir }}
+
+- name: Copy tomcat config  code file to clients
+  template: src=server.xml dest=/u01/tomcat-{{ tomcat_application_name }}/conf/server.xml
+  
+- name: Copy tomcat catalina.sh code file to clients
+  template: src=catalina.sh  dest=/u01/tomcat-{{ tomcat_application_name }}/bin/
+    
+- name: Copy apr lib  code file to usr lib
+  shell: cp  -rp  /usr/local/apr/lib/*   /usr/lib
+    
+- name: mkdir u01 logs
+  command: mkdir -p /u01/logs
+       
+- name: Modify /u01/tomcat-{{ tomcat_application_name }}/conf permisson
+  file: path=/u01/tomcat-{{ tomcat_application_name }}/conf owner=root group=root state=directory mode=644 recurse=yes
+  
+- name: mkdir /u01/javacode/{{ tomcat_application_name }}
+  command: mkdir -p /u01/javacode/{{ tomcat_application_name }} 
+  
+- name: Modify /u01/javacode/{{ tomcat_application_name }} permisson
+  file: path=/u01/javacode/{{ tomcat_application_name }} owner=nobody group=nobody mode=755 recurse=yes
+
+
+- name: mkdir -p /var/crontab
+  shell:  mkdir /var/crontab
+  ignore_errors: yes
+  
+  
+- name: Copy tomcat restart_scripts to clients
+  template: src=restart_tomcat.sh dest=/var/crontab/restart_tomcat.sh
+
+- name: Delete tar.gz source file
+  shell: rm -rf /tmp/*.tar.gz

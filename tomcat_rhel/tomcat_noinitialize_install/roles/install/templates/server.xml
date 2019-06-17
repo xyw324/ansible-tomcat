@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="{{ tomcat_shutdownport }}" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <!-- <Listener className="org.apache.catalina.core.JasperListener" /> -->
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <Service name="Catalina">
+ <Executor name="tomcatThreadPool" namePrefix="catalina-exec-" maxThreads="350" minSpareThreads="10" maxHttpHeaderSize="32768" maxPostSize="10000000" maxIdleTime="15000"/>
+
+ <Connector executor="tomcatThreadPool"
+               port="{{ tomcat_port }}" protocol="org.apache.coyote.http11.Http11AprProtocol"
+               URIEncoding="UTF-8"  
+               enableLookups="false" 
+               disableUploadTimeout="true" 
+               connectionTimeout="20000"
+               acceptCount="1200"   
+               maxThreads="1000" 
+               compression="on" 
+               compressionMinSize="2048"
+               maxPostSize="10000000"
+               maxHttpHeaderSize="32768"
+               compressableMimeType="text/html,text/xml,text/javascript,text/css,text/plain"
+               redirectPort="8443" />
+    <Engine name="Catalina" defaultHost="localhost">
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+
+      <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="false">
+
+   <Valve className="org.apache.catalina.valves.AccessLogValve" directory="/u01/httpd"
+               prefix="{{ tomcat_application_name }}_access_log" suffix=".txt"
+               pattern="%{X-Forwarded-For}i %a %l %u %t %r %s %b %D %{Referer}i %{User-Agent}i %{loginCode}i %T" />
+        <!-- <Context path="" docBase="/u01/javacode/{{ tomcat_application_name }}" reloadable="false"/> -->
+      </Host>
+    </Engine>
+  </Service>
+</Server>

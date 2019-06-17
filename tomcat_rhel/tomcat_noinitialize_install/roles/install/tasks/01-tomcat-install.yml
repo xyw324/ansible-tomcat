@@ -1,0 +1,46 @@
+---
+- name: Copy apache-tomcat-{{ tomcat_version }}.tar.gz  to clients
+  copy: src=apache-tomcat-{{ tomcat_version }}.tar.gz dest=/tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+
+- name: Uncompression apache-tomcat-{{ tomcat_version }}.tar.gz
+  shell: tar zxf /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz -C /usr/local/src/ 
+  
+- name: copy apache-tomcat-{{ tomcat_version }} to tomcat-{{ tomcat_application_name }}
+  command: mv /usr/local/src/apache-tomcat-{{ tomcat_version }}  /u01/tomcat-{{ tomcat_application_name }}
+
+- name: Uncompression tomcat-native.tar.gz
+  shell: tar zxf /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native.tar.gz -C /u01/tomcat-{{ tomcat_application_name }}/bin
+  
+- name: Configure the install tomcat-native
+  command: ./configure --with-apr=/usr/local/apr  --with-ssl=/usr/local/openssl
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+
+- name: Make tomcat-native
+  command: make
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+
+- name: Make install tomcat-native
+  command: make install 
+  args:
+    chdir: /u01/tomcat-{{ tomcat_application_name }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native/
+
+- name: Copy tomcat config  code file to clients
+  template: src=server.xml dest=/u01/tomcat-{{ tomcat_application_name }}/conf/server.xml
+  
+- name: Copy tomcat catalina.sh code file to clients
+  template: src=catalina.sh  dest=/u01/tomcat-{{ tomcat_application_name }}/bin/
+       
+- name: Modify /u01/tomcat-{{ tomcat_application_name }}/conf permisson
+  file: path=/u01/tomcat-{{ tomcat_application_name }}/conf owner=root group=root mode=755 recurse=yes
+  
+- name: mkdir /u01/javacode/{{ tomcat_application_name }}
+  command: mkdir -p /u01/javacode/{{ tomcat_application_name }} 
+  
+- name: Modify /u01/javacode/{{ tomcat_application_name }} permisson
+  file: path=/u01/javacode/{{ tomcat_application_name }} owner=nobody group=nobody mode=755 recurse=yes
+  
+
+- name: Delete tar.gz source file
+  shell: rm -rf /tmp/*.tar.gz

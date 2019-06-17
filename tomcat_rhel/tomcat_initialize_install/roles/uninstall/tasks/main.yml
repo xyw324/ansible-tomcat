@@ -1,0 +1,3 @@
+---
+- include: 01-tomcat-uninstall.yml
+- include: 02-rsync-uninstall.yml

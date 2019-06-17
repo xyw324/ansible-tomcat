@@ -1,0 +1,18 @@
+---
+- name: Copy rsync config file to clients
+  template: src=rsyncd.conf dest=/tmp/rsyncd.conf
+  
+- name: Add rsync config
+  shell: cat /tmp/rsyncd.conf >  /etc/rsyncd.conf
+  
+- name: Copy xinetd config file to clients
+  template: src=xinetd-rsync.file dest=/tmp/xinetd-rsync.file
+  
+- name: Add xinetd config
+  shell: cat /tmp/xinetd-rsync.file > /etc/xinetd.d/rsync
+
+- name: Start rsyncd service
+  shell: /etc/init.d/xinetd restart
+
+- name: dos2unix rsyncd.conf
+  shell: dos2unix  /etc/rsyncd.conf

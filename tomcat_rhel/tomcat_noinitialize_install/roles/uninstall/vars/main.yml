@@ -1,0 +1,16 @@
+#根据需求选择tomcat版本
+#tomcat_version: 7.0.82
+tomcat_version: 8.0.47
+
+#根据需求选择tomcat名称
+tomcat_application_name: admin
+
+#根据需求选择tomcat端口 
+tomcat_port: 8081
+tomcat_shutdownport: 8006
+
+apr_util_version: 1.5.4
+apr_version: 1.5.2
+openssl_version: 1.1.0
+tomcat_native_version: 1.2.14
+tomcat_httpddir: /u01/httpd

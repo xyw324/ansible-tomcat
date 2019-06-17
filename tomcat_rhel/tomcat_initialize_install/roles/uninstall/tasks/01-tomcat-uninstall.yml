@@ -1,0 +1,24 @@
+---
+- name: Stop tomcat-{{ tomcat_application_name }}
+  shell: sh /var/crontab/restart_tomcat.sh tomcat-{{ tomcat_application_name }} stop
+  
+- name: delete tomcat-{{ tomcat_application_name }} dir
+  shell: rm -rf /u01/tomcat-{{ tomcat_application_name }}
+  
+- name: delete tomcat-{{ tomcat_application_name }} log
+  shell: rm -rf /u01/httpd/{{ tomcat_application_name }}*
+  
+- name: delete tomcat-{{ tomcat_application_name }} javacode
+  shell: rm -rf /u01/javacode/{{ tomcat_application_name }}
+
+- name: rm -rf /usr/local/apr
+  shell: rm -rf /usr/local/apr
+ 
+- name: rm -rf apr-{{ apr_version }}
+  shell: rm -rf /usr/local/src/apr-{{ apr_version }}
+  
+- name: rm -rf apr-util-{{ apr_util_version }}
+  shell: rm -rf /usr/local/src/apr-util-{{ apr_util_version }}
+  
+- name: rm -rf openssl-{{ openssl_version }}f
+  shell: rm -rf /usr/local/src/openssl-{{ openssl_version }}f
